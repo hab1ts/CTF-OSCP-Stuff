@@ -118,15 +118,15 @@ route add 10.0.0.0 255.0.0.0 1
 route print
   
 11. Now configure socks proxy in metasploit and start it:
-    * use auxiliary/server/socks4a
-    * set SRVHOST 127.0.0.1
-    * run
+  * use auxiliary/server/socks4a
+  * set SRVHOST 127.0.0.1
+  * run
 (You can use default settings for SRVHOST 0.0.0.0 as well. The port is important. Default is Port 1080)
   
 12. Configure proxy chains on the Kali Box:
-    * vi /etc/proxychains.conf
+  * vi /etc/proxychains.conf
 Edit the ProxyList at the bottom of the file:
-    * socks4   127.0.0.1   1080
+  * socks4   127.0.0.1   1080
 The configuration has to be the same as in metasploit
   
 13. Run you nmap scan using proxychains:
@@ -140,7 +140,7 @@ proxychains nmap -Pn -sT -p445,3389 10.0.0.10
 Background the meterpreter session and then add the route in metasploit for the meterpreter Session! See Steps 9-11)
   
 14. Get Remote Desktop
-    * proxychains rdesktop 10.0.0.10
+  * proxychains rdesktop 10.0.0.10
   
 15. Surf to 10.0.0.10
-    * proxychains firefox 10.0.0.10
+  * proxychains firefox 10.0.0.10
